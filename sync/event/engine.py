@@ -8,10 +8,10 @@ from base.event.engine import EVENT_TIMER, Event, BaseEventEngine
 class EventEngine(BaseEventEngine):
     def __init__(self, interval: int) -> None:
         super(EventEngine, self).__init__(interval)
-        self._thread: Thread = Thread(target=self._run)
+        self._thread: Thread = Thread(target=self._run_process_event)
         self._timer: Thread = Thread(target=self._run_timer)
 
-    def start(self) -> None:
+    def start(self, *args, **kwargs) -> None:
         """
         Start sync engine to process events and generate timer events.
         """

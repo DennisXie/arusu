@@ -12,7 +12,7 @@ class EventEngine(BaseEventEngine):
         self._async_handlers: defaultdict = defaultdict(list)
         self._async_general_handlers: list = []
 
-    def _process(self, event: Event) -> None:
+    def _process_event(self, event: Event) -> None:
         """
         First distribute sync to those handlers registered listening
         to this type.
@@ -26,20 +26,20 @@ class EventEngine(BaseEventEngine):
         if self._async_general_handlers:
             [from_thread.run(handler, event) for handler in self._async_general_handlers]
 
-        super(EventEngine, self)._process(event)
+        super(EventEngine, self)._process_event(event)
 
     async def _run_timer(self) -> None:
-        while True:
+        while self._active:
             await sleep(self._interval)
             event: Event = Event(EVENT_TIMER)
             await self.async_put(event)
 
-    async def start(self) -> None:
-        async with create_task_group() as task_group:
-            task_group.start_soon(to_thread.run_sync, self._run)
-            task_group.start_soon(self._run_timer)
+    async def start(self, *args, **kwargs) -> None:
+        task_group = kwargs["task_group"]
+        task_group.start_soon(to_thread.run_sync, self._run_process_event)
+        task_group.start_soon(self._run_timer)
 
-    async def stop(self) -> None:
+    def stop(self) -> None:
         self._active = False
 
     def put(self, event: Event) -> None:

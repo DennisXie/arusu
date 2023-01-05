@@ -23,18 +23,18 @@ class BaseEventEngine(object):
         self._handlers: defaultdict = defaultdict(list)
         self._general_handlers: list = []
 
-    def _run(self) -> None:
+    def _run_process_event(self) -> None:
         """
         Get sync from queue and then process it.
         """
         while self._active:
             try:
                 event: Event = self._queue.get(block=True, timeout=1)
-                self._process(event)
+                self._process_event(event)
             except Empty:
                 pass
 
-    def _process(self, event: Event) -> None:
+    def _process_event(self, event: Event) -> None:
         """
         First distribute sync to those handlers registered listening
         to this type.
@@ -57,7 +57,7 @@ class BaseEventEngine(object):
             event: Event = Event(EVENT_TIMER)
             self.put(event)
 
-    def start(self) -> None:
+    def start(self, *args, **kwargs) -> None:
         """
         Start sync engine to process events and generate timer events.
         """
